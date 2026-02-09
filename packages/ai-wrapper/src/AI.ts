@@ -1,5 +1,5 @@
 export class AI {
   hello() {
-    return "Hello, world!";
+    return "Hello, world!!!";
   }
 }

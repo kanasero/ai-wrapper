@@ -3,9 +3,11 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@kanasero/ai-wrapper": "*"
+    "@kanasero/ai-wrapper": "*",
+    "dotenv": "^17.2.4"
   },
   "devDependencies": {
+    "@types/node": "^25.2.2",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
   },

@@ -1,2 +1,7 @@
 /node_modules
 /**/dist
+
+llm-cache
+llm-log
+
+.env

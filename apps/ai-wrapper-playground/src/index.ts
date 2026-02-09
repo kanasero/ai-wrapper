@@ -1,5 +1,18 @@
-import { AI } from "@kanasero/ai-wrapper";
+import { AIWrapper } from "@kanasero/ai-wrapper";
+import { config } from "./config";
 
-console.log("app playground");
-const ai = new AI();
-console.log(ai.hello());
+async function main() {
+  const ai = new AIWrapper({
+    apiKey: config.apiKey,
+    defaultModel: config.defaultModel,
+  });
+
+  console.log(
+    await ai.ask({
+      message:
+        "Напиши перевод предложения на английский: 'Привет как дела?'. Больше ничего не выводи в ответе.",
+    }),
+  );
+}
+
+main();

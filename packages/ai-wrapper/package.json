@@ -1,6 +1,6 @@
 {
   "name": "@kanasero/ai-wrapper",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "AI wrapper",
   "license": "MIT",
   "type": "module",
@@ -13,6 +13,10 @@
     "build": "tsc -p tsconfig.json"
   },
   "devDependencies": {
+    "@types/node": "^25.2.2",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "openai": "^6.18.0"
   }
 }

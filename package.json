@@ -1,0 +1,13 @@
+{
+  "name": "@kanasero/ai-wrapper-repo",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "playground": "npm -w ai-wrapper-playground run dev",
+    "build:lib": "npm -w @kanasero/ai-wrapper run build",
+    "publish": "npm -w @kanasero/ai-wrapper publish --access public"
+  }
+}

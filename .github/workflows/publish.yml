@@ -1,0 +1,58 @@
+name: Publish ai-wrapper
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/ai-wrapper/package.json"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - run: npm ci
+
+      - name: Read version
+        id: v
+        run: |
+          node -e "console.log(require('./packages/ai-wrapper/package.json').version)" > version.txt
+          echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
+
+      - name: Skip if version already published
+        id: check
+        run: |
+          node - <<'NODE'
+          const { execSync } = require('node:child_process');
+          const pkg = '@kanasero/ai-wrapper';
+          const v = process.env.VERSION;
+          let versions = [];
+          try {
+            const out = execSync(`npm view ${pkg} versions --json`, { stdio: ['ignore','pipe','ignore'] }).toString();
+            versions = JSON.parse(out);
+          } catch { /* package might not exist or network issue */ }
+          if (Array.isArray(versions) && versions.includes(v)) {
+            console.log('Already published:', v);
+            process.exit(1); // will be handled by continue-on-error below if you want
+          }
+          console.log('Not published yet:', v);
+          NODE
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+
+      - name: Build library
+        run: npm -w @kanasero/ai-wrapper run build
+
+      - name: Publish
+        run: npm -w @kanasero/ai-wrapper publish --access public

@@ -18,6 +18,7 @@ export class AIWrapper {
   #logDir: string;
   #DEFAULT_AI_REQUEST: { [key: string]: any };
   #config: AIWrapperConfig;
+  readonly #AI_MAX_RETRIES = 3;
 
   constructor(config: AIWrapperConfig) {
     this.#config = config;
@@ -30,7 +31,7 @@ export class AIWrapper {
 
     this.#DEFAULT_AI_REQUEST = {
       ifUseCache: config.ifUseCache ?? true,
-      ifVerifyJSON: config.ifValidateJSON ?? true,
+      ifValidateSON: config.ifValidateJSON ?? true,
     };
   }
 
@@ -54,53 +55,66 @@ export class AIWrapper {
       return Promise.resolve(fs.readFileSync(cachedFile).toString());
     }
 
+    let attempts = 0;
     const openai = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: this.#config.apiKey,
     });
-    return openai.chat.completions
-      .create({
-        model,
-        messages,
-        response_format: {
-          type: "json_object",
-        },
-      })
-      .then((response) => {
-        if (response.choices.length === 0 || !response.choices[0])
+
+    const totalAttempts = this.#AI_MAX_RETRIES + 1;
+    let attempt = 0;
+    let lastError: unknown;
+
+    do {
+      attempts++;
+      try {
+        const response = await openai.chat.completions.create({
+          model,
+          messages,
+          response_format: { type: "json_object" },
+        });
+
+        if (response.choices.length === 0 || !response.choices[0]) {
           throw new Error("No inference from LLM");
-        if (response.choices[0].message.content === null) {
-          throw new Error("LLM response is null");
-        } else {
-          const responseContent = response.choices[0].message.content
-            .trim()
-            .replace(/<think>.+<\/think>/s, "")
-            .trim()
-            .replace(/^```(?:json)?(.+)```$/s, "$1")
-            .trim();
-          if (finalRequest.ifValidateJSON) {
-            try {
-              JSON.parse(responseContent);
-            } catch {
-              throw new Error("AI response is not valid JSON, try again");
-            }
-          }
-          this.#writeToCache(cachedFile, responseContent);
-          return responseContent;
         }
-      })
-      .catch((error: string) => {
+
+        const content = response.choices[0].message.content;
+        if (content === null) throw new Error("LLM response is null");
+
+        const responseContent = content
+          .trim()
+          .replace(/<think>.+<\/think>/s, "")
+          .trim()
+          .replace(/^```(?:json)?(.+)```$/s, "$1")
+          .trim();
+
+        if (finalRequest.ifValidateJSON) {
+          JSON.parse(responseContent);
+        }
+
+        this.#writeToCache(cachedFile, responseContent);
+        return responseContent;
+      } catch (err) {
+        lastError = err;
+
         const logPath = path.join(this.#logDir, "llm-error.log");
         const time = new Date().toISOString();
         const historyText = finalRequest.history
           ? finalRequest.history.map((item) => item.content).join("\n\t")
           : "";
+        const msg = err instanceof Error ? err.message : String(err);
+
         fs.writeFileSync(
           logPath,
-          `${time} ${error}\n\t${finalRequest.message}\n\t${historyText}\n`,
+          `${time} [attempt ${attempt}/${totalAttempts}] ${msg}\n\t${finalRequest.message}\n` +
+            (historyText ? `\t${historyText}\n` : ""),
+          { flag: "a" },
         );
-        throw new Error(error);
-      });
+
+        if (attempt >= totalAttempts) break;
+      }
+    } while (attempts < this.#AI_MAX_RETRIES);
+    throw lastError instanceof Error ? lastError : new Error(String(lastError));
   }
 
   #getCacheFilePath(uid: string | object, model: string) {

@@ -11,6 +11,7 @@ export interface AIWrapperConfig {
   logDir?: string;
   ifUseCache?: boolean;
   ifValidateJSON?: boolean;
+  ifDebugLog?: boolean;
 }
 
 export class AIWrapper {
@@ -55,7 +56,6 @@ export class AIWrapper {
       return Promise.resolve(fs.readFileSync(cachedFile).toString());
     }
 
-    let attempts = 0;
     const openai = new OpenAI({
       baseURL: "https://openrouter.ai/api/v1",
       apiKey: this.#config.apiKey,
@@ -66,8 +66,15 @@ export class AIWrapper {
     let lastError: unknown;
 
     do {
-      attempts++;
+      attempt++;
       try {
+        if (this.#config.ifDebugLog) {
+          if (attempt > 1) {
+            console.log(`Retrying request ${model}, attemp ${attempt}`);
+          } else {
+            console.log(`Requesting ${model}`);
+          }
+        }
         const response = await openai.chat.completions.create({
           model,
           messages,
@@ -113,7 +120,7 @@ export class AIWrapper {
 
         if (attempt >= totalAttempts) break;
       }
-    } while (attempts < this.#AI_MAX_RETRIES);
+    } while (attempt < this.#AI_MAX_RETRIES);
     throw lastError instanceof Error ? lastError : new Error(String(lastError));
   }
 

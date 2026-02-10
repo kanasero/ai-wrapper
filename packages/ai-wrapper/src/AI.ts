@@ -10,7 +10,7 @@ export interface AIWrapperConfig {
   cacheDir?: string;
   logDir?: string;
   ifUseCache?: boolean;
-  ifVerifyJSON?: boolean;
+  ifValidateJSON?: boolean;
 }
 
 export class AIWrapper {
@@ -30,7 +30,7 @@ export class AIWrapper {
 
     this.#DEFAULT_AI_REQUEST = {
       ifUseCache: config.ifUseCache ?? true,
-      ifVerifyJSON: config.ifVerifyJSON ?? true,
+      ifVerifyJSON: config.ifValidateJSON ?? true,
     };
   }
 
@@ -78,7 +78,7 @@ export class AIWrapper {
             .trim()
             .replace(/^```(?:json)?(.+)```$/s, "$1")
             .trim();
-          if (finalRequest.ifVerifyJSON) {
+          if (finalRequest.ifValidateJSON) {
             try {
               JSON.parse(responseContent);
             } catch {

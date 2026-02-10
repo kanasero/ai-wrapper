@@ -8,6 +8,7 @@
   "scripts": {
     "playground": "npm -w ai-wrapper-playground run dev",
     "build:lib": "npm -w @kanasero/ai-wrapper run build",
-    "publish": "npm -w @kanasero/ai-wrapper publish --access public"
+    "publish:once": "npm -w @kanasero/ai-wrapper publish --access public",
+    "publish": "npm -w @kanasero/ai-wrapper version patch && npm -w @kanasero/ai-wrapper publish"
   }
 }

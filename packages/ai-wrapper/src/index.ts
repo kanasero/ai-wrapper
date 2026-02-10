@@ -1,1 +1,1 @@
-export * from "./AI";
+export * from "./AI.js";

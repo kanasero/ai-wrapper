@@ -2,7 +2,7 @@ import fs from "fs";
 import { hash } from "node:crypto";
 import OpenAI from "openai";
 import path from "path";
-import { AIMessage, AIMessageRole, AIRequest } from "./models/ai.model";
+import { AIMessage, AIMessageRole, AIRequest } from "./models/ai.model.js";
 
 export interface AIWrapperConfig {
   apiKey: string;

@@ -1,6 +1,6 @@
 {
   "name": "@kanasero/ai-wrapper",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "AI wrapper",
   "license": "MIT",
   "type": "module",

@@ -2,6 +2,7 @@ export interface AIRequest {
   message: string;
   history?: AIMessage[];
   ifUseCache?: boolean;
+  ifVerifyJSON?: boolean;
   model?: string;
 }
 

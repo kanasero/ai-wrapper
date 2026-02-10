@@ -9,8 +9,8 @@ export interface AIWrapperConfig {
   defaultModel: string;
   cacheDir?: string;
   logDir?: string;
-  useCache?: boolean;
-  verifyJSON?: boolean;
+  ifUseCache?: boolean;
+  ifVerifyJSON?: boolean;
 }
 
 export class AIWrapper {
@@ -29,8 +29,8 @@ export class AIWrapper {
     if (!fs.existsSync(this.#logDir)) fs.mkdirSync(this.#logDir);
 
     this.#DEFAULT_AI_REQUEST = {
-      ifUseCache: config.useCache ?? true,
-      ifVerifyJSON: config.verifyJSON ?? true,
+      ifUseCache: config.ifUseCache ?? true,
+      ifVerifyJSON: config.ifVerifyJSON ?? true,
     };
   }
 
@@ -80,7 +80,7 @@ export class AIWrapper {
             .trim();
           if (finalRequest.ifVerifyJSON) {
             try {
-              JSON.parse(finalRequest.message);
+              JSON.parse(responseContent);
             } catch {
               throw new Error("AI response is not valid JSON, try again");
             }
